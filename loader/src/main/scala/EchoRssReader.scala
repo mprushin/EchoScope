@@ -1,5 +1,3 @@
-package main.scala
-
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Locale

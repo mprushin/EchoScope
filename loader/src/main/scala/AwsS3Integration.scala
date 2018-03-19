@@ -1,5 +1,3 @@
-package main.scala
-
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 

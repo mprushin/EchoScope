@@ -1,5 +1,3 @@
-package main.scala
-
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
