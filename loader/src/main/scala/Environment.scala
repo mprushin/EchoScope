@@ -6,4 +6,5 @@ object Environment {
   val AWS_SECRET_KEY =Properties.envOrNone("AWS_SECRET_KEY")
   val PROXY_HOST =Properties.envOrNone("PROXY_HOST")
   val PROXY_PORT =Properties.envOrNone("PROXY_PORT")
+  val ECHO_RSS_URL = Properties.envOrElse("ECHO_RSS_URL", "https://echo.msk.ru/interview/rss-fulltext.xml")
 }

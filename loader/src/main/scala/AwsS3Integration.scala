@@ -22,15 +22,9 @@ object AwsS3Integration {
   }
 
   val amazonS3Client = new AmazonS3Client(yourAWSCredentials, clientCfg)
-  //amazonS3Client.setEndpoint("s3.eu-central-1.amazonaws.com")
-  //System.setProperty("com.amazonaws.services.s3.enableV4", "true")
 
   val region: Region = Region.getRegion(Regions.EU_CENTRAL_1)
   amazonS3Client.setRegion(region)
-
-  def getClient(): AmazonS3Client = {
-    amazonS3Client
-  }
 
   def putObject(key: String, input: String): Unit = {
     val dataStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))
@@ -45,7 +39,7 @@ object AwsS3Integration {
     dataStream.close()
   }
 
-  def getListing(): List[String] = {
+  def getLoadedArticles: List[String] = {
     val listOfObjects = amazonS3Client.listObjects(Environment.BUCKET_NAME.getOrElse("")).getObjectSummaries
     listOfObjects.asScala.toList.map(_.getKey)
   }
