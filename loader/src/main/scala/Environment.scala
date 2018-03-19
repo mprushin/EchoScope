@@ -1,3 +1,5 @@
+package main.scala
+
 import scala.util.Properties
 
 object Environment {
