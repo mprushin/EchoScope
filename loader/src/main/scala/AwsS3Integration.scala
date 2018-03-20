@@ -33,13 +33,13 @@ object AwsS3Integration {
     val streamMD5 = new String(Base64.encodeBase64(resultByte))
     val metadata = new ObjectMetadata
     metadata.setContentMD5(streamMD5)
-    metadata.setContentLength(input.getBytes(StandardCharsets.UTF_8).length);
+    metadata.setContentLength(input.getBytes(StandardCharsets.UTF_8).length)
 
     amazonS3Client.putObject(Environment.BUCKET_NAME.getOrElse(""), key, dataStream, metadata)
     dataStream.close()
   }
 
-  def getLoadedArticles: List[String] = {
+  def getLoadedArticleIds: List[String] = {
     val listOfObjects = amazonS3Client.listObjects(Environment.BUCKET_NAME.getOrElse("")).getObjectSummaries
     listOfObjects.asScala.toList.map(_.getKey)
   }
