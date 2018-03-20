@@ -1,15 +1,15 @@
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 import org.htmlcleaner.HtmlCleaner
 
-import scala.collection.mutable.ListBuffer
+import scala.util.control.NonFatal
 import scala.xml.XML
+import scalaj.http.Http
 
 object EchoRssReader extends App {
 
-  def readRss(rssUrl: String): Either[Exception, Seq[Article]] = {
+  def readRss(rssUrl: String): Either[Throwable, List[Article]] = {
     try {
       val xml = XML.load(rssUrl)
 
@@ -25,23 +25,31 @@ object EchoRssReader extends App {
 
       Right(articles
         .filter(!_._3.isEmpty) //Link is not empty
-        .map(pair => Article(pair._1, pair._2, loadArticleText(pair._4), pair._3, pair._4))
-        .filter(!_.text.isEmpty))
+        .map(pair => Article(pair._1, pair._2, loadArticleText(pair._4).right.get, pair._3, pair._4))
+        .filter(!_.text.isEmpty).toList)
     }
     catch {
-      case e: Exception => Left(e)
+      case NonFatal(e) => Left(e)
     }
   }
 
-  def loadArticleText(url: String): String = {
-    var stories = new ListBuffer[String]
-    val cleaner = new HtmlCleaner
-    val rootNode = cleaner.clean(new URL(url))
-    val elements = rootNode.getElementsByName("div", true)
+  def loadArticleText(url: String): Either[Throwable, String] = {
+    try {
+      val content = Http(url).asString
+      if (content.isError) Left(new Throwable("HTTP Error"))
 
-    elements.toList
-      .filter(elem => elem.hasAttribute("class") && elem.getAttributeByName("class").equalsIgnoreCase("typical dialog _ga1_on_ contextualizable include-relap-widget"))
-      .map(elem => elem.getText.toString).foldRight[String]("")((a, b) => a + b)
+      val rootNode = (new HtmlCleaner).clean(content.body)
+      val elements = rootNode.getElementsByName("div", true)
+
+      val article = elements.toList
+        .filter(elem => elem.hasAttribute("class") && elem.getAttributeByName("class").equalsIgnoreCase("typical dialog _ga1_on_ contextualizable include-relap-widget"))
+        .map(elem => elem.getText.toString).foldRight[String]("")((a, b) => a + b)
+
+      Right(article)
+    }
+    catch {
+      case NonFatal(e) => Left(e)
+    }
   }
 
 }
