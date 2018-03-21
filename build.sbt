@@ -1,10 +1,22 @@
+import sbt.Keys.libraryDependencies
+
 val circeVersion = "0.9.1"
 
 lazy val commonSettings = Seq(
   version := "0.1",
-  scalaVersion := "2.12.4")
+  scalaVersion := "2.11.7",
+  //ScalaTest
+  libraryDependencies ++= Seq(
+    "org.scalactic" %% "scalactic" % "3.0.4",
+    "org.scalatest" %% "scalatest" % "3.0.4" % "test",
+    "junit" % "junit" % "4.10" % Test,
+  ),
 
-lazy val loaderSettings = Seq(
+  //AWS
+  libraryDependencies ++= Seq(
+    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.0"
+  ),
+
   //Core
   libraryDependencies ++= Seq(
     "org.scalaj" %% "scalaj-http" % "2.3.0",
@@ -18,17 +30,22 @@ lazy val loaderSettings = Seq(
     "io.circe" %% "circe-parser"
   ).map(_ % circeVersion),
 
+
+)
+
+lazy val loaderSettings = Seq(
+
   //Java Libs
   libraryDependencies ++= Seq(
-    "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
-    "com.amazonaws" % "aws-java-sdk-s3" % "1.11.0"),
+    "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16"
+  )
 
-  //ScalaTest
+)
+
+lazy val analyticsSettings = Seq(
+
   libraryDependencies ++= Seq(
-    "org.scalactic" %% "scalactic" % "3.0.4",
-    "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-    "junit" % "junit" % "4.10" % Test,
-
+    "org.apache.spark" %% "spark-core" % "2.3.0"
   )
 )
 
@@ -43,4 +60,11 @@ lazy val loader = (project in file("loader"))
     name := "EchoScope Loader",
     commonSettings,
     loaderSettings
+  ).dependsOn(core)
+
+lazy val analytics = (project in file("analytics"))
+  .settings(
+    name := "EchoScope Analytics",
+    commonSettings,
+    analyticsSettings
   ).dependsOn(core)
