@@ -10,6 +10,7 @@ import org.apache.commons.codec.binary.Base64
 import org.apache.commons.codec.digest.DigestUtils
 
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 
 
 object AwsS3Integration {
@@ -27,7 +28,7 @@ object AwsS3Integration {
   val region: Region = Region.getRegion(Regions.EU_CENTRAL_1)
   amazonS3Client.setRegion(region)
 
-  def putObject(key: String, input: String): Unit = {
+  def putObject(key: String, input: String): Either[EchoError, String] = {
     val dataStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))
 
     val resultByte = DigestUtils.md5(input)
@@ -36,19 +37,37 @@ object AwsS3Integration {
     metadata.setContentMD5(streamMD5)
     metadata.setContentLength(input.getBytes(StandardCharsets.UTF_8).length)
 
-    amazonS3Client.putObject(Environment.BUCKET_NAME.getOrElse(""), key, dataStream, metadata)
-    dataStream.close()
+    try {
+      amazonS3Client.putObject(Environment.BUCKET_NAME.getOrElse(""), key, dataStream, metadata)
+      Right(key)
+    }
+    catch {
+      case NonFatal(e) => Left(IntegrationError(e.getMessage, e))
+    }
+    finally {
+      dataStream.close()
+    }
   }
 
-  def getObject(key: String): String = {
-    val stream = amazonS3Client.getObject(Environment.BUCKET_NAME.getOrElse(""), key).getObjectContent
-    val bufferedReader = new BufferedReader(new InputStreamReader(stream))
-    val text = bufferedReader.lines.iterator().asScala
-    text.reduce(_+" "+_)
+  def getObject(key: String): Either[EchoError, String] = {
+    try {
+      val stream = amazonS3Client.getObject(Environment.BUCKET_NAME.getOrElse(""), key).getObjectContent
+      val bufferedReader = new BufferedReader(new InputStreamReader(stream))
+      val text = bufferedReader.lines.iterator().asScala
+      Right(text.reduce(_ + " " + _))
+    }
+    catch {
+      case NonFatal(e) => Left(IntegrationError(e.getMessage, e))
+    }
   }
 
-  def getLoadedArticleIds: List[String] = {
-    val listOfObjects = amazonS3Client.listObjects(Environment.BUCKET_NAME.getOrElse("")).getObjectSummaries
-    listOfObjects.asScala.toList.map(_.getKey)
+  def getLoadedArticleIds: Either[EchoError, List[String]] = {
+    try {
+      val listOfObjects = amazonS3Client.listObjects(Environment.BUCKET_NAME.getOrElse("")).getObjectSummaries
+      Right(listOfObjects.asScala.toList.map(_.getKey))
+    }
+    catch {
+      case NonFatal(e) => Left(IntegrationError(e.getMessage, e))
+    }
   }
 }

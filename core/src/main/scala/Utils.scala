@@ -1,5 +1,8 @@
 import scala.util.Either
 
+/**
+  * Extension for Either to provide map and flatMap functions
+  */
 trait Utils {
   implicit class EitherMap[A, B](e: Either[A, B]) {
     def map[B1](f: B => B1): Either[A, B1] = e match {
