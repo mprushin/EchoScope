@@ -13,7 +13,7 @@ AWS_ACCESS_KEY - amazon access key
 AWS_SECRET_KEY - amazon secret key 
 BUCKET_NAME - amazon S3 buckt name (should be created beforehand)
 PROXY_HOST - proxy host if needed
-PROXY_PORT - poxy port if needed
+PROXY_PORT - proxy port if needed
 ```
 
 ## Running
